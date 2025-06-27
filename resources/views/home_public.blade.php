@@ -58,7 +58,13 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="invoice_number" class="form-label">Número de Factura:</label>
-                                <input type="text" class="form-control" id="invoice_number" name="invoice_number" required>
+                                <!-- Mantener el valor de búsqueda después de enviar el formulario -->
+                                <input type="text" class="form-control @error('invoice_number') is-invalid @enderror" id="invoice_number" name="invoice_number" value="{{ old('invoice_number', request('invoice_number')) }}" required>
+                                @error('invoice_number')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Buscar Orden</button>
                         </form>
@@ -80,6 +86,7 @@
                                     @if ($order->status === 'delivered' && $deliveryPhotoUrl)
                                         <li class="list-group-item">
                                             <strong>Evidencia de Entrega:</strong><br>
+                                            <!-- Usa asset() o la ruta directamente si storage:link funciona. Storage::url() requiere una ruta de almacenamiento correcta -->
                                             <img src="{{ $deliveryPhotoUrl }}" alt="Foto de Entrega" class="img-fluid mt-2" style="max-height: 300px;">
                                         </li>
                                     @endif
@@ -87,12 +94,13 @@
                                 </ul>
                             @else
                                 <div class="alert alert-warning mt-4" role="alert">
-                                    Orden no encontrada. Por favor, verifica el número de factura.
+                                    Orden no encontrada. Por favor, verifica el n=C3=BAmero de factura.
                                 </div>
                             @endif
                         @endif
 
-                        @if ($errors->any())
+                        {{-- Los errores de validación ahora se manejan directamente en el campo con @error --}}
+                        {{-- @if ($errors->any())
                             <div class="alert alert-danger mt-4">
                                 <ul>
                                     @foreach ($errors->all() as $error)
@@ -100,7 +108,7 @@
                                     @endforeach
                                 </ul>
                             </div>
-                        @endif
+                        @endif --}}
 
                         <div class="text-center mt-4">
                             <a href="{{ route('login') }}" class="btn btn-link">Acceso para Personal (Login)</a>
