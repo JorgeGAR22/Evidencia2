@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+// use Illuminate\Contracts\Auth\MustVerifyEmail; // Solo si necesitas verificar emails
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notifiable; // <-- IMPORTANTE: Esta línea debe estar
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable; // <-- IMPORTANTE: 'Notifiable' debe estar aquí también
 
     /**
      * The attributes that are mass assignable.
@@ -34,16 +34,21 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array<string, string>
+     * @return array<string, string>
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    protected function casts(): array // <-- Nueva forma de definir los casts en Laravel moderno
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
-    // ¡¡AÑADE ESTE MÉTODO si no está, o CORRÍGELO si está mal!!
+    /**
+     * Define la relación: Un usuario tiene muchas notas.
+     */
     public function notes()
     {
         return $this->hasMany(Note::class);
