@@ -202,7 +202,7 @@ class OrderController extends Controller
     public function archived(Request $request)
     {
         // Esta línea detendrá la ejecución y mostrará un mensaje si la petición llega aquí
-        dd('¡Llegó al controlador de órdenes archivadas!'); 
+        // dd('¡Llegó al controlador de órdenes archivadas!'); // Línea de depuración eliminada
 
         $query = Order::onlyTrashed()->orderBy('deleted_at', 'desc'); // Solo las órdenes eliminadas lógicamente
 

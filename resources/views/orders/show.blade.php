@@ -1,79 +1,78 @@
-@extends('layouts.app')
+@extends('adminlte::page')
+
+@section('title', 'Detalles de Orden')
+
+@section('content_header')
+    <h1>Detalles de Orden: #{{ $order->invoice_number }}</h1>
+@stop
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">Detalles de la Orden: #{{ $order->invoice_number }}</div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Información de la Orden</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Número de Factura:</strong> {{ $order->invoice_number }}</p>
+                    <p><strong>Cliente:</strong> {{ $order->customer_name }}</p>
+                    <p><strong>Email Cliente:</strong> {{ $order->customer_email ?? 'N/A' }}</p>
+                    <p><strong>Teléfono Cliente:</strong> {{ $order->customer_phone ?? 'N/A' }}</p>
+                    <p><strong>Dirección de Entrega:</strong> {{ $order->shipping_address }}</p>
+                    <p><strong>Monto Total:</strong> ${{ number_format($order->total_amount, 2) }}</p>
+                    <p><strong>Creada Por:</strong> {{ $order->creator->name ?? 'N/A' }}</p>
+                    <p><strong>Fecha de Orden:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</p>
+                    <p><strong>Última Actualización:</strong> {{ $order->updated_at->format('d/m/Y H:i') }}</p>
+                    <p><strong>Estado:</strong>
+                        @php
+                            $badgeClass = '';
+                            switch ($order->status) {
+                                case 'ordered': $badgeClass = 'badge-primary'; break;
+                                case 'in_process': $badgeClass = 'badge-info'; break;
+                                case 'in_route': $badgeClass = 'badge-warning'; break;
+                                case 'delivered': $badgeClass = 'badge-success'; break;
+                                case 'cancelled': $badgeClass = 'badge-danger'; break;
+                                default: $badgeClass = 'badge-secondary'; break;
+                            }
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h4>Detalles del Proceso:</h4>
+                    <p><strong>Nombre del Proceso:</strong> {{ $order->process_name ?? 'N/A' }}</p>
+                    <p><strong>Fecha del Proceso:</strong> {{ $order->process_date ? $order->process_date->format('d/m/Y H:i') : 'N/A' }}</p>
 
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>ID de Orden:</strong> {{ $order->id }}</li>
-                    <li class="list-group-item"><strong>Número de Factura:</strong> {{ $order->invoice_number }}</li>
-                    <li class="list-group-item"><strong>Nombre del Cliente:</strong> {{ $order->customer_name }}</li>
-                    <li class="list-group-item"><strong>Email del Cliente:</strong> {{ $order->customer_email ?? 'N/A' }}</li>
-                    <li class="list-group-item"><strong>Teléfono del Cliente:</strong> {{ $order->customer_phone ?? 'N/A' }}</li>
-                    <li class="list-group-item"><strong>Dirección de Envío:</strong> {{ $order->shipping_address }}</li>
-                    <li class="list-group-item"><strong>Monto Total:</strong> ${{ number_format($order->total_amount, 2) }}</li>
-                    <li class="list-group-item">
-                        <strong>Estado:</strong>
-                        <span class="badge bg-{{
-                            $order->status == 'pending' ? 'warning text-dark' :
-                            ($order->status == 'in_process' ? 'info' :
-                            ($order->status == 'in_route' ? 'primary' :
-                            ($order->status == 'delivered' ? 'success' :
-                            'danger')))
-                        }}">
-                            {{ str_replace('_', ' ', ucfirst($order->status)) }}
-                        </span>
-                    </li>
-                    <li class="list-group-item"><strong>Creada Por:</strong> {{ $order->user->name ?? 'N/A' }}</li>
-                    <li class="list-group-item"><strong>Fecha de Orden:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</li>
-                    <li class="list-group-item"><strong>Última Actualización:</strong> {{ $order->updated_at->format('d/m/Y H:i') }}</li>
-
-                    @if ($order->process_name)
-                        <li class="list-group-item"><strong>Nombre del Proceso:</strong> {{ $order->process_name }}</li>
-                        <li class="list-group-item"><strong>Fecha de Proceso:</strong> {{ $order->process_date ? $order->process_date->format('d/m/Y H:i') : 'N/A' }}</li>
-                    @endif
-
+                    <h4>Evidencias Fotográficas:</h4>
                     @if ($order->in_route_photo_path)
-                        <li class="list-group-item">
-                            <strong>Foto en Ruta:</strong><br>
-                            <img src="{{ Storage::url($order->in_route_photo_path) }}" alt="Foto en Ruta" class="img-fluid mt-2" style="max-height: 300px;">
-                        </li>
+                        <p><strong>Foto en Ruta:</strong></p>
+                        <img src="{{ Storage::url($order->in_route_photo_path) }}" alt="Foto en Ruta" class="img-fluid mb-2" style="max-width: 300px;">
+                        <br><a href="{{ Storage::url($order->in_route_photo_path) }}" target="_blank">Ver en tamaño completo</a>
+                    @else
+                        <p>No hay foto en ruta.</p>
                     @endif
 
                     @if ($order->delivered_photo_path)
-                        <li class="list-group-item">
-                            <strong>Foto de Entrega:</strong><br>
-                            <img src="{{ Storage::url($order->delivered_photo_path) }}" alt="Foto de Entrega" class="img-fluid mt-2" style="max-height: 300px;">
-                        </li>
-                    @endif
-
-                    @if ($order->trashed())
-                        <li class="list-group-item text-danger"><strong>Estado:</strong> Archivada (Eliminada Lógicamente el {{ $order->deleted_at->format('d/m/Y H:i') }})</li>
-                    @endif
-                </ul>
-
-                <div class="mt-4">
-                    <a href="{{ route('orders.edit', $order) }}" class="btn btn-warning me-2">Editar Orden</a>
-                    @if ($order->trashed())
-                        <form action="{{ route('orders.restore', $order->id) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" class="btn btn-success">Restaurar Orden</button>
-                        </form>
+                        <p class="mt-3"><strong>Foto de Entrega:</strong></p>
+                        <img src="{{ Storage::url($order->delivered_photo_path) }}" alt="Foto de Entrega" class="img-fluid mb-2" style="max-width: 300px;">
+                        <br><a href="{{ Storage::url($order->delivered_photo_path) }}" target="_blank">Ver en tamaño completo</a>
                     @else
-                        <form action="{{ route('orders.destroy', $order) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres archivar esta orden?');">Archivar Orden</button>
-                        </form>
+                        <p>No hay foto de entrega.</p>
                     @endif
-                    <a href="{{ route('orders.index') }}" class="btn btn-secondary float-end">Volver a Órdenes</a>
                 </div>
             </div>
         </div>
+        <div class="card-footer">
+            <a href="{{ route('orders.edit', $order) }}" class="btn btn-info"><i class="fas fa-edit"></i> Editar Orden</a>
+            <a href="{{ route('orders.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver al Listado</a>
+        </div>
     </div>
-</div>
-@endsection
+@stop
+
+@section('css')
+    {{-- CSS adicional si es necesario --}}
+@stop
+
+@section('js')
+    {{-- JS adicional si es necesario --}}
+@stop

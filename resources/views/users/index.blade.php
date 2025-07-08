@@ -1,73 +1,104 @@
-@extends('layouts.app')
+@extends('adminlte::page') {{-- Extiende la plantilla principal de AdminLTE --}}
+
+@section('title', 'Gestión de Usuarios')
+
+@section('content_header')
+    <h1>Gestión de Usuarios</h1>
+@stop
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header">Gestión de Usuarios</div>
-
-            <div class="card-body">
-                <div class="mb-3 d-flex justify-content-between align-items-center">
-                    <a href="{{ route('users.create') }}" class="btn btn-primary">Crear Nuevo Usuario</a>
-                    <form action="{{ route('users.index') }}" method="GET" class="d-flex">
-                        <select name="status" class="form-select me-2" onchange="this.form.submit()">
-                            <option value="">Todos los usuarios</option>
-                            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Usuarios Activos</option>
-                            <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Usuarios Inactivos</option>
-                        </select>
-                    </form>
-                </div>
-
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th>Rol</th>
-                            <th>Departamento</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($users as $user)
-                            <tr>
-                                <td>{{ $user->id }}</td>
-                                <td>{{ $user->name }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>{{ $user->role->name ?? 'N/A' }}</td>
-                                <td>{{ $user->department->name ?? 'N/A' }}</td>
-                                <td>
-                                    @if ($user->is_active)
-                                        <span class="badge bg-success">Activo</span>
-                                    @else
-                                        <span class="badge bg-danger">Inactivo</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-info me-1">Editar</a>
-                                    <form action="{{ route('users.toggleActive', $user) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('PUT')
-                                        <button type="submit" class="btn btn-sm {{ $user->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $user->is_active ? 'Desactivar' : 'Activar' }}
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7">No hay usuarios para mostrar.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                <div class="d-flex justify-content-center">
-                    {{ $users->links() }}
-                </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Listado de Usuarios</h3>
+            <div class="card-tools">
+                <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nuevo Usuario
+                </a>
             </div>
         </div>
+        <div class="card-body">
+            {{-- Sección para mostrar alertas (éxito, error, etc.) --}}
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
+
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol/Departamento</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Itera sobre la colección de usuarios pasada desde el controlador --}}
+                    @forelse ($users as $user)
+                        <tr>
+                            <td>{{ $user->id }}</td>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>{{ $user->role ? $user->role->name : 'N/A' }}</td> {{-- Asumiendo que tienes una relación 'role' --}}
+                            <td>
+                                @if ($user->is_active)
+                                    <span class="badge badge-success">Activo</span>
+                                @else
+                                    <span class="badge badge-danger">Inactivo</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('users.edit', $user) }}" class="btn btn-info btn-xs">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                {{-- Formulario para cambiar estado (Activo/Inactivo) --}}
+                                <form action="{{ route('users.toggleActive', $user) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn {{ $user->is_active ? 'btn-warning' : 'btn-success' }} btn-xs"
+                                            onclick="return confirm('¿Estás seguro de cambiar el estado de este usuario?')">
+                                        <i class="fas fa-{{ $user->is_active ? 'ban' : 'check' }}"></i> {{ $user->is_active ? 'Desactivar' : 'Activar' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center">No hay usuarios registrados.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-@endsection
+@stop
+
+@section('css')
+    {{-- Aquí puedes añadir CSS adicional si lo necesitas --}}
+@stop
+
+@section('js')
+    {{-- Script para que las alertas de Bootstrap se cierren automáticamente (opcional) --}}
+    <script>
+        $(document).ready(function() {
+            // Cierra las alertas después de 5 segundos
+            setTimeout(function() {
+                $(".alert").alert('close');
+            }, 5000);
+        });
+    </script>
+@stop

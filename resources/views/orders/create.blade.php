@@ -1,51 +1,108 @@
-@extends('layouts.app')
+@extends('adminlte::page')
+
+@section('title', 'Crear Nueva Orden')
+
+@section('content_header')
+    <h1>Crear Nueva Orden</h1>
+@stop
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">Crear Nueva Orden</div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Formulario de Creación de Orden</h3>
+        </div>
+        <div class="card-body">
+            <form action="{{ route('orders.store') }}" method="POST">
+                @csrf
 
-            <div class="card-body">
-                <form action="{{ route('orders.store') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="invoice_number" class="form-label">Número de Factura:</label>
-                        <input type="text" class="form-control" id="invoice_number" name="invoice_number" value="{{ old('invoice_number') }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="customer_name" class="form-label">Nombre del Cliente / Empresa:</label>
-                        <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ old('customer_name') }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="customer_email" class="form-label">Email del Cliente (opcional):</label>
-                        <input type="email" class="form-control" id="customer_email" name="customer_email" value="{{ old('customer_email') }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="customer_phone" class="form-label">Teléfono del Cliente (opcional):</label>
-                        <input type="text" class="form-control" id="customer_phone" name="customer_phone" value="{{ old('customer_phone') }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="shipping_address" class="form-label">Dirección de Entrega:</label>
-                        <textarea class="form-control" id="shipping_address" name="shipping_address" rows="3" required>{{ old('shipping_address') }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="total_amount" class="form-label">Monto Total:</label>
-                        <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" value="{{ old('total_amount') }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="user_id" class="form-label">Orden Creada Por (Vendedor):</label>
-                        <select class="form-select" id="user_id" name="user_id" required>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->id }}" {{ old('user_id', Auth::id()) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Crear Orden</button>
-                    <a href="{{ route('orders.index') }}" class="btn btn-secondary">Cancelar</a>
-                </form>
-            </div>
+                <div class="form-group">
+                    <label for="invoice_number">Número de Factura:</label>
+                    <input type="text" name="invoice_number" id="invoice_number" class="form-control @error('invoice_number') is-invalid @enderror" value="{{ old('invoice_number') }}" required>
+                    @error('invoice_number')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_name">Nombre o Razón Social del Cliente:</label>
+                    <input type="text" name="customer_name" id="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name') }}" required>
+                    @error('customer_name')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_email">Email del Cliente (Opcional):</label>
+                    <input type="email" name="customer_email" id="customer_email" class="form-control @error('customer_email') is-invalid @enderror" value="{{ old('customer_email') }}">
+                    @error('customer_email')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_phone">Teléfono del Cliente (Opcional):</label>
+                    <input type="text" name="customer_phone" id="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" value="{{ old('customer_phone') }}">
+                    @error('customer_phone')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="shipping_address">Dirección de Entrega:</label>
+                    <textarea name="shipping_address" id="shipping_address" class="form-control @error('shipping_address') is-invalid @enderror" rows="3" required>{{ old('shipping_address') }}</textarea>
+                    @error('shipping_address')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="total_amount">Monto Total:</label>
+                    <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control @error('total_amount') is-invalid @enderror" value="{{ old('total_amount') }}" required>
+                    @error('total_amount')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="user_id">Vendedor (Creador de la Orden):</label>
+                    <select name="user_id" id="user_id" class="form-control @error('user_id') is-invalid @enderror" required>
+                        <option value="">Seleccione un vendedor</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}" {{ old('user_id', Auth::id()) == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('user_id')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
+                <button type="submit" class="btn btn-primary">Crear Orden</button>
+                <a href="{{ route('orders.index') }}" class="btn btn-secondary">Cancelar</a>
+            </form>
         </div>
     </div>
-</div>
-@endsection
+@stop
+
+@section('css')
+    {{-- CSS adicional si es necesario --}}
+@stop
+
+@section('js')
+    {{-- JS adicional si es necesario --}}
+@stop
